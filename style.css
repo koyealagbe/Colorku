@@ -1,0 +1,33 @@
+html {
+  background: #cdcdcd;
+  text-align: center;
+}
+h1, h2 {
+  font-family: 'Caveat', cursive;
+}
+h1 {
+  font-size: 48px;
+}
+h2 {
+  font-size: 36px;
+  font-weight: 400;
+}
+.board {
+  margin: 0 auto;
+  border-spacing: 0px;
+}
+.board tr {
+  display: block;
+  padding: 0;
+}
+.board tr td {
+  border: 1px solid #9c9c9c;
+  background: #efefef;
+  padding: 0;
+  width: 60px;
+  min-width: 40px;
+  height: 60px;
+}
+.red {
+  background: #f00 !important;
+}

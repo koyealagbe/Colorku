@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <title>Colorku!</title>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+    <script src='https://cdn.jsdelivr.net/g/lodash@4(lodash.min.js+lodash.fp.min.js)'></script>
+  </head>
+
+  <body>
+
+    <h1>Welcome to 
+      <strong style = "color:rgb(255, 0, 0)">C</strong>
+      <strong style = "color: rgb(255, 136, 0)">O</strong>
+      <strong style = "color: rgb(255, 255, 0)">L</strong>
+      <strong style = "color: rgb(0, 255, 0)">O</strong>
+      <strong style = "color: rgb(0, 100, 255)">R</strong>
+      <strong style = "color: rgb(50, 0, 255)">K</strong>
+      <strong style = "color: rgb(200, 0, 255)">U</strong>
+      !
+    </h1>
+    <h2>Choose your desired size and difficulty level, and then select "New Puzzle!" to play!
+    </h2>
+
+    <form id="new-puzzle-form">
+      <select name="size" id="size">
+        <option value="4">4 x 4</option>
+        <option value="9">9 x 9</option>
+      </select>
+      <select name="level" id="level">
+        <option value="1">Easy</option>
+        <option value="2">Medium</option>
+        <option value="3">Hard</option>
+      </select>
+      <input type="submit" value="New Puzzle!" />
+    </form>
+
+    <table id="board" class="board"></table>
+
+    <input type="button" id="solve" value="Solve!"/>
+
+  </body>
+
+  <script type="text/javascript" src="colorku.js"></script>
+  <script type="text/javascript">
+    var form = document.getElementById("new-puzzle-form");
+    var board = document.getElementById("board");
+    var puzzle;
+    var colors = [];
+
+    form.onsubmit = function(e) {
+      e.preventDefault();
+      board.innerHTML = "";
+      var size = form.elements["size"].value;
+      var level = form.elements["level"].value;
+      let req = new XMLHttpRequest();
+      req.open("GET", `https://cors-anywhere.herokuapp.com/http://www.cs.utep.edu/cheon/ws/sudoku/new/?size=${size}&level=${level}`);
+      req.send();
+      req.onload = function() {
+        if (req.status == 200) {
+          var response = JSON.parse(req.response);
+          createGame(response);
+        }
+      }
+    };
+
+    function createGame(json) {
+      var boardElem = document.getElementById("board");
+      puzzle = new Board(parseInt(json.size));
+      puzzle.initialize();
+
+      if (puzzle.size == 4)
+        colors = ["#efefef", "#f00", "#0f0", "#00f", "#ff0"];
+      if (puzzle.size == 9)
+        colors = ["#efefef", "#f00", "#0f0", "#00f", "#ff0", "#0ff", "#f0f", "#6a0dad", "#ffc0cb", "#ff8300"];
+      
+      populateBoard(puzzle, json.squares);
+      for (var i = 0; i < puzzle.size; i++) {
+        var row = document.createElement("tr");
+        row.classList.add("board-row");
+        boardElem.appendChild(row);
+        for (var j = 0; j < puzzle.size; j++) {
+          var square = document.createElement("td");
+          square.classList.add("board-square");
+          square.setAttribute("row", i);
+          square.setAttribute("col", j);
+          square.style.backgroundColor = colors[puzzle.cells[i][j].value];
+          if (puzzle.size == 4) {
+            if (j == 1) {
+              square.style.borderRight = "4px solid #9c9c9c";
+            }
+            if (i == 1) {
+              square.style.borderBottom = "4px solid #9c9c9c";
+            }
+          }
+          if (puzzle.size == 9) {
+            if (j == 2 || j == 5) {
+              square.style.borderRight = "3px solid #9c9c9c";
+            }
+            if (i == 2 || i == 5) {
+              square.style.borderBottom = "3px solid #9c9c9c";
+            }
+          }
+          row.appendChild(square);
+        }
+      }
+    }
+
+    var solveButton = document.getElementById("solve");
+    solveButton.onclick = function() {
+      puzzle = solvePuzzle(puzzle);
+      for (var i = 0; i < puzzle.size; i++) {
+        for (var j = 0; j < puzzle.size; j++) {
+          var squares = document.getElementsByClassName("board-square");
+          for (var k = 0; k < squares.length; k++) {
+            if (squares[k].getAttribute("row") == i && squares[k].getAttribute("col") == j) {
+              squares[k].style.backgroundColor = colors[puzzle.cells[i][j].value];
+            }
+          }
+        }
+      }
+    }
+
+  </script>
+
+</html>
